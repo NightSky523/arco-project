@@ -1,8 +1,16 @@
-import { RouterProvider } from 'react-router-dom'
-import router from './router'
+import { RouterProvider } from "react-router-dom";
+import { useEffect } from "react";
+import router from "./router";
+import { useGlobal } from "./stores/global";
 
 function App() {
-  return <RouterProvider router={router} />
+  const { fetchMe } = useGlobal();
+
+  useEffect(() => {
+    fetchMe();
+  }, [fetchMe]);
+
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;

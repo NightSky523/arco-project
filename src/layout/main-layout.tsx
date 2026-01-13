@@ -6,7 +6,7 @@ import {
   useMatches,
   useNavigate,
 } from "react-router-dom";
-import { Layout, Menu, Breadcrumb, Button } from "@arco-design/web-react";
+import { Layout, Menu, Breadcrumb, Button, Dropdown } from "@arco-design/web-react";
 import {
   IconHome,
   IconCalendar,
@@ -14,12 +14,14 @@ import {
   IconCaretLeft,
   IconDashboard,
   IconUser,
+  IconSettings,
+  IconPoweroff,
 } from "@arco-design/web-react/icon";
+import { useGlobal } from "@/stores/global";
 
 const { Header, Content, Sider, Footer } = Layout;
 const MenuItem = Menu.Item;
 const SubMenu = Menu.SubMenu;
-
 interface MenuItemConfig {
   key: string;
   path?: string;
@@ -34,12 +36,6 @@ const menuItems: MenuItemConfig[] = [
     path: "/",
     label: "首页",
     icon: <IconHome />,
-  },
-  {
-    key: "about",
-    path: "/about",
-    label: "关于",
-    icon: <IconCalendar />,
   },
   {
     key: "contact",
@@ -138,6 +134,8 @@ const getBreadcrumbs = (
 };
 
 export function MainLayout() {
+  const { me, logout } = useGlobal();
+
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const matches = useMatches();
@@ -160,9 +158,31 @@ export function MainLayout() {
     }
   };
 
+  const handleUserMenuClick = (key: string) => {
+    if (key === 'logout') {
+      logout();
+    } else if (key === 'settings') {
+      console.log('打开设置');
+    }
+  };
+
+  const userMenu = (
+    <Menu onClickMenuItem={handleUserMenuClick}>
+      <Menu.Item key="settings">
+        <IconSettings className="mr-2" />
+        设置
+      </Menu.Item>
+      <Menu.Item key="logout">
+        <IconPoweroff className="mr-2" />
+        退出登录
+      </Menu.Item>
+    </Menu>
+  );
+
   const breadcrumbs = getBreadcrumbs(matches);
 
   const renderMenuItems = (items: MenuItemConfig[]): React.ReactNode => {
+    
     return items.map((item) => {
       if (item.children) {
         return (
@@ -192,45 +212,50 @@ export function MainLayout() {
 
   return (
     <Layout className="layout-collapse-demo min-h-screen">
-      <Sider
-        collapsed={collapsed}
-        collapsible
-        trigger={null}
-        breakpoint="xl"
-        className="pt-6 flex flex-col h-screen"
-      >
-        <div className={`logo flex items-center mb-4 overflow-hidden ${collapsed ? 'justify-center' : 'px-3'}`}>
-          <IconDashboard className={`text-2xl text-blue-500 shrink-0 ${collapsed ? '' : 'mr-2'}`} />
-          {!collapsed && <span className="text-lg font-semibold whitespace-nowrap">Arco Project</span>}
+      <Header className="flex items-center justify-between px-6 h-16 border-b border-gray-200">
+        <div className="flex items-center">
+          <IconDashboard className="text-2xl text-blue-500 mr-2" />
+          <span className="text-lg font-semibold">Arco Project</span>
         </div>
-        <Menu
-          defaultOpenKeys={["nav1"]}
-          selectedKeys={getSelectedKeys()}
-          onClickMenuItem={handleMenuClick}
-          className="w-full"
-        >
-          {renderMenuItems(menuItems)}
-        </Menu>
-        <div className={`mt-auto flex items-center ${collapsed ? 'justify-center' : 'px-3 py-4'}`}>
-          <div className={`flex items-center ${collapsed ? '' : 'w-full'}`}>
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-              <IconUser className="text-white text-sm" />
-            </div>
-            {!collapsed && (
-              <div className="ml-3 overflow-hidden">
-                <div className="text-sm font-medium whitespace-nowrap">用户名</div>
-                <div className="text-xs text-gray-500 whitespace-nowrap">user@example.com</div>
+        <div className="flex items-center">
+          <Dropdown droplist={userMenu} trigger="click">
+            <div className="flex items-center cursor-pointer hover:bg-gray-100 px-3 py-2 rounded transition-colors">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white mr-2">
+                <IconUser />
               </div>
-            )}
-          </div>
+              <span className="text-sm font-medium">{me?.username || '未知用户名'}</span>
+            </div>
+          </Dropdown>
         </div>
-      </Sider>
+      </Header>
       <Layout>
-        <Header className="flex items-center justify-between">
-          <Button className="trigger" onClick={handleCollapsed}>
-            {collapsed ? <IconCaretRight /> : <IconCaretLeft />}
-          </Button>
-        </Header>
+        <Sider
+          collapsed={collapsed}
+          collapsible
+          trigger={null}
+          breakpoint="xl"
+          style={{ position: "relative" }}
+        >
+          <div className="absolute top-1/5 right-0 translate-x-1/2 -translate-y-1/2 z-10">
+            <Button
+              className="trigger"
+              onClick={handleCollapsed}
+              type="primary"
+              shape="round"
+              icon={collapsed ? <IconCaretRight /> : <IconCaretLeft />}
+              size='mini'
+            />
+          </div>
+          <Menu
+            defaultOpenKeys={["nav1"]}
+            selectedKeys={getSelectedKeys()}
+            onClickMenuItem={handleMenuClick}
+            className="w-full"
+          >
+            {renderMenuItems(menuItems)}
+          </Menu>
+         
+        </Sider>
         <Layout className="px-6">
           <Breadcrumb className="mx-4 my-4">
             {breadcrumbs.map((item, index) => (
