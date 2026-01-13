@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -12,17 +13,22 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <MainLayout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <Home />,
-        handle: { title: "首页" },
-      },
-      {
-        path: "contact",
-        element: <Contact />,
-        handle: { title: "联系" },
+        element: <MainLayout />,
+        children: [
+          {
+            index: true,
+            element: <Home />,
+            handle: { title: "首页" },
+          },
+          {
+            path: "contact",
+            element: <Contact />,
+            handle: { title: "联系" },
+          },
+        ],
       },
     ],
   },
