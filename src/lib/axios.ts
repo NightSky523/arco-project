@@ -1,4 +1,4 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from "axios";
+import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse, type AxiosRequestConfig, type AxiosInstance } from "axios";
 import { useGlobal } from "@/stores/global";
 import { Message } from "@arco-design/web-react";
 
@@ -10,13 +10,21 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});
+}) as AxiosInstance & {
+  get: <T = any>(url: string, config?: AxiosRequestConfig & { skipAuth?: boolean }) => Promise<T>;
+  post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig & { skipAuth?: boolean }) => Promise<T>;
+  put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig & { skipAuth?: boolean }) => Promise<T>;
+  delete: <T = any>(url: string, config?: AxiosRequestConfig & { skipAuth?: boolean }) => Promise<T>;
+  patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig & { skipAuth?: boolean }) => Promise<T>;
+};
 
 axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = useGlobal().token;
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+  (config: InternalAxiosRequestConfig & { skipAuth?: boolean }) => {
+    if (!config.skipAuth) {
+      const token = useGlobal().token;
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
